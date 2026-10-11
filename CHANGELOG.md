@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/Bibek-Dhakal/DataPrep-Baseline/compare/dataprep-baseline-v0.2.0...dataprep-baseline-v0.2.1) (2026-10-11)
+
+
+### Documentation
+
+* **release:** fix broken links in v0.2.0 release notes ([8b19cb8](https://github.com/Bibek-Dhakal/DataPrep-Baseline/commit/8b19cb886d37acb275fd0750d190f443dff0d7dc))
+
 ## [0.2.0](https://github.com/Bibek-Dhakal/DataPrep-Baseline/compare/dataprep-baseline-v0.1.0...dataprep-baseline-v0.2.0) (2026-10-11)
 
 

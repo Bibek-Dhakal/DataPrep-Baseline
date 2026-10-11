@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dataprep-baseline"
-version = "0.2.0"
+version = "0.2.1"
 description = "Leak-free preprocessing and baseline predictive modeling with scikit-learn pipelines."
 readme = "README.md"
 requires-python = ">=3.10"
