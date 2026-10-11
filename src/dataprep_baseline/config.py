@@ -12,7 +12,7 @@ load_dotenv()
 
 ENV_PREFIX = "DATAPREP_"
 TASKS = ("auto", "classification", "regression")
-SCALERS = ("robust", "standard")
+SCALERS = ("standard", "robust")
 ENCODERS = ("onehot", "target")
 
 
@@ -34,10 +34,11 @@ class Config:
     random_state: int = 42
     test_size: float = 0.2
     cv_folds: int = 5
-    scaler: str = "robust"
+    scaler: str = "standard"
     categorical_encoder: str = "onehot"
     n_jobs: int = -1
     rf_estimators: int = 100
+    lr_max_iter: int = 1000
     output_dir: Path = Path("outputs")
 
     def __post_init__(self) -> None:
@@ -53,6 +54,8 @@ class Config:
             raise ValueError("cv_folds must be at least 2")
         if self.rf_estimators < 1:
             raise ValueError("rf_estimators must be at least 1")
+        if self.lr_max_iter < 1:
+            raise ValueError("lr_max_iter must be at least 1")
 
     @classmethod
     def from_env(cls) -> Config:
@@ -69,5 +72,6 @@ class Config:
             categorical_encoder=_env("ENCODER", cls.categorical_encoder),
             n_jobs=int(_env("N_JOBS", str(cls.n_jobs))),
             rf_estimators=int(_env("RF_ESTIMATORS", str(cls.rf_estimators))),
+            lr_max_iter=int(_env("LR_MAX_ITER", str(cls.lr_max_iter))),
             output_dir=Path(_env("OUTPUT_DIR", str(cls.output_dir))),
         )

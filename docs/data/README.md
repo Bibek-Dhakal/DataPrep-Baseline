@@ -30,6 +30,16 @@ python preprocess_and_model.py --data data/adult.csv --target class --drop-cols 
 `fnlwgt` is a census sampling weight rather than a person attribute, so dropping it is optional but common. The
 pipeline also runs without `--drop-cols`.
 
+### Scaler note for skewed columns
+
+`capital-gain` and `capital-loss` are mostly zero. For such columns the interquartile range is 0, so `--scaler robust`
+leaves them unscaled and logistic regression fails to converge (`ConvergenceWarning`). The default `standard` scaler
+handles them. Compare if you like:
+
+```bash
+python preprocess_and_model.py --data data/adult.csv --target class --drop-cols fnlwgt --scaler robust --output-dir outputs/adult_robust
+```
+
 ## Using your own dataset
 
 Any CSV works if it meets these requirements:
@@ -62,6 +72,7 @@ python preprocess_and_model.py --data data/mydata.csv --target price --task regr
   categorical. Convert them to numeric in the CSV before running.
 - Numeric codes that are really categories (for example a zip code or a class code) are scaled as numbers.
 - Date and datetime columns are not parsed. Derive numeric features (year, month) or drop them.
+- Datasets with extreme outliers: compare `--scaler standard` (default) with `--scaler robust`.
 
 ## Other candidates
 

@@ -157,3 +157,28 @@ def test_cli_custom_csv_with_drop_cols(custom_csv, tmp_path, monkeypatch):
     argv = ["--data", str(custom_csv), "--target", "label", "--drop-cols", "row_id"]
     assert main([*argv, "--cv-folds", "3", "--output-dir", str(out)]) == 0
     assert (out / "scorecard.csv").exists()
+
+
+def test_lr_max_iter_default_and_override():
+    assert Config().lr_max_iter == 1000
+    model = get_models("classification", Config(lr_max_iter=123))["logistic_regression"]
+    assert model.max_iter == 123
+
+
+def test_lr_max_iter_from_env(monkeypatch):
+    monkeypatch.setenv("DATAPREP_LR_MAX_ITER", "250")
+    assert Config.from_env().lr_max_iter == 250
+
+
+def test_lr_max_iter_validation(monkeypatch):
+    with pytest.raises(ValueError, match="lr_max_iter"):
+        Config(lr_max_iter=0)
+    monkeypatch.setenv("DATAPREP_LR_MAX_ITER", "0")
+    assert main([]) == 2
+
+
+def test_default_scaler_is_standard_and_robust_is_selectable():
+    assert Config().scaler == "standard"
+    assert Config(scaler="robust").scaler == "robust"
+    with pytest.raises(ValueError, match="scaler"):
+        Config(scaler="minmax")

@@ -20,7 +20,7 @@ def get_models(task: str, cfg: Config) -> dict[str, BaseEstimator]:
     rs = cfg.random_state
     if task == "classification":
         return {
-            "logistic_regression": LogisticRegression(max_iter=1000, random_state=rs),
+            "logistic_regression": LogisticRegression(max_iter=cfg.lr_max_iter, random_state=rs),
             "random_forest": RandomForestClassifier(
                 n_estimators=cfg.rf_estimators, n_jobs=cfg.n_jobs, random_state=rs
             ),

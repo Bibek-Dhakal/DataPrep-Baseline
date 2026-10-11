@@ -7,7 +7,7 @@ encoder is fit on training data only. It is evaluated with in-pipeline cross-val
 
 ## Features
 
-- Numeric branch: median imputation, then robust or standard scaling.
+- Numeric branch: median imputation, then standard scaling (default) or robust scaling.
 - Categorical branch: most-frequent imputation, then one-hot or target encoding (unseen categories are ignored at
   inference).
 - Baselines: logistic regression / ridge, random forest, gradient boosting.
