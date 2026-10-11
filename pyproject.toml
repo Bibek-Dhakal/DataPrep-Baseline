@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dataprep-baseline"
+version = "0.1.0"
+description = "Leak-free preprocessing and baseline predictive modeling with scikit-learn pipelines."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Bibek Dhakal" }]
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+    "joblib",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "pre-commit",
+]
+
+[project.scripts]
+dataprep-baseline = "dataprep_baseline.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dataprep_baseline"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008", "E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q --cov=dataprep_baseline --cov-report=term-missing"

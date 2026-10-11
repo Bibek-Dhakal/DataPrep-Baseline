@@ -1,0 +1,42 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Misc
+PATCH.md
+temp.md
+
+# Personal workspace
+docs/00_aaa/
+
+# Project outputs
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Models and data artifacts
+*.joblib
+
+# IDE / editor
+.idea/
+.vscode/
+.vscode-test/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
