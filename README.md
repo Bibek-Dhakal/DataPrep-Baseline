@@ -5,6 +5,8 @@ Leak-free data cleaning, feature preprocessing and baseline predictive modeling 
 Raw tabular data goes through a single `Pipeline` (`ColumnTransformer` + estimator), so every imputer, scaler and
 encoder is fit on training data only. It is evaluated with in-pipeline cross-validation and a hold-out test split.
 
+**Latest release:** [v0.2.0](docs/releases/v0.2.0.md) | [Results on Adult Census Income](docs/results/adult.md)
+
 ## Features
 
 - Numeric branch: median imputation, then standard scaling (default) or robust scaling.
@@ -32,6 +34,8 @@ A documented real-world example (Adult Census Income) with download instructions
 
 - [Usage](docs/usage.md): CLI flags, environment variables, outputs, using your own dataset
 - [Data](docs/data/README.md): example datasets, download steps, dataset requirements
+- [Results](docs/results/README.md): measured outputs from real runs
+- [Releases](docs/releases/README.md): release notes ([latest: v0.2.0](docs/releases/v0.2.0.md))
 - [Architecture](docs/architecture.md): design and data flow
 - [Testing](docs/testing.md): test strategy and commands
 - [Code quality](docs/code_quality.md): linting, formatting, hooks

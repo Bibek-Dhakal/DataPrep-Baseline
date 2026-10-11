@@ -48,8 +48,9 @@ If your data has extreme outliers, compare both scalers: `--scaler robust` and `
 ## Runtime
 
 Runtime depends on row count, column count, hardware and the random forest size. The synthetic demo (2,000 rows)
-finishes in a few seconds. Around 50k rows takes roughly ten seconds with default settings on a typical laptop,
-mostly from random forest with cross-validation. To speed up large runs:
+finishes in a few seconds. The documented Adult run (about 48k rows) took about 12 seconds with default settings on a
+Windows laptop (see [results](results/adult.md)), mostly from random forest with cross-validation. To speed up large
+runs:
 
 ```bash
 python preprocess_and_model.py --data data/big.csv --target label --cv-folds 3
