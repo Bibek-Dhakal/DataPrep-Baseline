@@ -8,7 +8,7 @@ import time
 from dataclasses import replace
 from pathlib import Path
 
-from .config import ENCODERS, SCALERS, TASKS, Config
+from .config import ENCODERS, SCALERS, TASKS, Config, parse_columns
 from .data import load_dataset
 from .evaluate import primary_metric
 from .pipeline import export_artifacts, run_experiment
@@ -23,6 +23,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--data", dest="data_path", type=Path, help="Path to input CSV file")
     p.add_argument("--target", help="Target column name (required with --data)")
+    p.add_argument(
+        "--drop-cols",
+        dest="drop_cols",
+        type=parse_columns,
+        help="Comma-separated feature columns to drop (IDs, leaky or junk columns)",
+    )
     p.add_argument("--task", choices=TASKS)
     p.add_argument("--seed", dest="random_state", type=int)
     p.add_argument("--test-size", type=float)
@@ -41,7 +47,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         cfg = replace(Config.from_env(), **overrides)
-        X, y = load_dataset(cfg.data_path, cfg.target, cfg.random_state)
+        X, y = load_dataset(cfg.data_path, cfg.target, cfg.random_state, cfg.drop_cols)
         result = run_experiment(X, y, cfg)
     except ValueError as exc:
         logger.error("Error: %s", exc)

@@ -20,10 +20,16 @@ def _env(name: str, default: str) -> str:
     return os.getenv(f"{ENV_PREFIX}{name}", default)
 
 
+def parse_columns(value: str) -> tuple[str, ...]:
+    """Parse a comma-separated column list ("a, b,c") into a tuple of names."""
+    return tuple(item.strip() for item in value.split(",") if item.strip())
+
+
 @dataclass(frozen=True)
 class Config:
     data_path: Path | None = None
     target: str | None = None
+    drop_cols: tuple[str, ...] = ()
     task: str = "auto"
     random_state: int = 42
     test_size: float = 0.2
@@ -54,6 +60,7 @@ class Config:
         return cls(
             data_path=Path(data_path) if data_path else None,
             target=_env("TARGET", "") or None,
+            drop_cols=parse_columns(_env("DROP_COLS", "")),
             task=_env("TASK", cls.task),
             random_state=int(_env("RANDOM_STATE", str(cls.random_state))),
             test_size=float(_env("TEST_SIZE", str(cls.test_size))),

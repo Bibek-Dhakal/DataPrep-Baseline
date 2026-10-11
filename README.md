@@ -12,6 +12,7 @@ encoder is fit on training data only. It is evaluated with in-pipeline cross-val
   inference).
 - Baselines: logistic regression / ridge, random forest, gradient boosting.
 - Classification (F1, precision, recall, ROC-AUC) and regression (RMSE, MAE, R2), auto-detected or forced.
+- Works with any CSV: pick the target column and optionally drop ID or junk columns with `--drop-cols`.
 - Built-in leakage audit, fixed seeds for reproducible runs, and a single serialized `.joblib` pipeline.
 - Outputs: scorecard CSV, confusion matrices, ROC curves (or predicted-vs-actual plots), best model.
 
@@ -20,12 +21,17 @@ encoder is fit on training data only. It is evaluated with in-pipeline cross-val
 ```bash
 pip install -e ".[dev]"
 python preprocess_and_model.py                                   # synthetic demo data
-python preprocess_and_model.py --data data.csv --target label    # your CSV
+python preprocess_and_model.py --data data.csv --target label    # your own CSV
+python preprocess_and_model.py --data data.csv --target label --drop-cols id,notes
 ```
+
+A documented real-world example (Adult Census Income) with download instructions is in
+[docs/data/README.md](docs/data/README.md). Any other CSV with a header row and a target column works the same way.
 
 ## Documentation
 
-- [Usage](docs/usage.md): CLI flags, environment variables, outputs
+- [Usage](docs/usage.md): CLI flags, environment variables, outputs, using your own dataset
+- [Data](docs/data/README.md): example datasets, download steps, dataset requirements
 - [Architecture](docs/architecture.md): design and data flow
 - [Testing](docs/testing.md): test strategy and commands
 - [Code quality](docs/code_quality.md): linting, formatting, hooks

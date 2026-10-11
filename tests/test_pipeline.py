@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -6,8 +8,8 @@ from sklearn.model_selection import cross_validate, train_test_split
 from sklearn.pipeline import Pipeline
 
 from dataprep_baseline.cli import main
-from dataprep_baseline.config import Config
-from dataprep_baseline.data import make_demo_dataset
+from dataprep_baseline.config import Config, parse_columns
+from dataprep_baseline.data import load_dataset, make_demo_dataset
 from dataprep_baseline.leakage import audit_no_leakage
 from dataprep_baseline.models import build_pipeline, get_models
 from dataprep_baseline.pipeline import run_experiment
@@ -38,6 +40,22 @@ def split():
     numeric, categorical = split_columns(X_tr)
     pre = build_preprocessor(numeric, categorical, CFG.scaler, CFG.categorical_encoder, 0)
     return X_tr, X_te, y_tr, y_te, numeric, pre
+
+
+@pytest.fixture
+def custom_csv(tmp_path):
+    rng = np.random.default_rng(0)
+    df = pd.DataFrame(
+        {
+            "row_id": range(200),
+            "x": rng.normal(size=200),
+            "grp": rng.choice(["a", "b"], 200),
+            "label": rng.integers(0, 2, 200),
+        }
+    )
+    path = tmp_path / "custom.csv"
+    df.to_csv(path, index=False)
+    return path
 
 
 def test_transformers_never_fit_on_holdout(split):
@@ -99,3 +117,43 @@ def test_cli_demo_run_exports_artifacts(tmp_path, monkeypatch):
     assert main(["--cv-folds", "3", "--output-dir", str(tmp_path)]) == 0
     for name in ("scorecard.csv", "best_model.joblib", "confusion_matrices.png", "roc_curves.png"):
         assert (tmp_path / name).exists()
+
+
+def test_parse_columns():
+    assert parse_columns("a, b,,c ") == ("a", "b", "c")
+    assert parse_columns("") == ()
+
+
+def test_drop_cols_removes_features(custom_csv):
+    X, y = load_dataset(custom_csv, "label", 0, ("row_id",))
+    assert list(X.columns) == ["x", "grp"]
+    assert len(X) == len(y)
+
+
+def test_drop_cols_rejects_target_and_unknown_columns(custom_csv):
+    with pytest.raises(ValueError, match="target"):
+        load_dataset(custom_csv, "label", 0, ("label",))
+    with pytest.raises(ValueError, match="not found"):
+        load_dataset(custom_csv, "label", 0, ("nope",))
+
+
+def test_id_like_column_warns(custom_csv, caplog):
+    with caplog.at_level(logging.WARNING, logger="dataprep_baseline.data"):
+        load_dataset(custom_csv, "label", 0)
+    assert "row_id" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.WARNING, logger="dataprep_baseline.data"):
+        load_dataset(custom_csv, "label", 0, ("row_id",))
+    assert "row_id" not in caplog.text
+
+
+def test_cli_missing_file_exits_with_error(tmp_path):
+    assert main(["--data", str(tmp_path / "missing.csv"), "--target", "label"]) == 2
+
+
+def test_cli_custom_csv_with_drop_cols(custom_csv, tmp_path, monkeypatch):
+    monkeypatch.setenv("DATAPREP_RF_ESTIMATORS", "10")
+    out = tmp_path / "out"
+    argv = ["--data", str(custom_csv), "--target", "label", "--drop-cols", "row_id"]
+    assert main([*argv, "--cv-folds", "3", "--output-dir", str(out)]) == 0
+    assert (out / "scorecard.csv").exists()

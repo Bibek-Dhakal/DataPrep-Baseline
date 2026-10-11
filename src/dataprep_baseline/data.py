@@ -10,6 +10,9 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+MIN_ROWS_FOR_ID_CHECK = 50
+ID_UNIQUE_RATIO = 0.9
+
 
 def make_demo_dataset(random_state: int = 42, n_rows: int = 2000) -> tuple[pd.DataFrame, pd.Series]:
     """Synthetic churn-style data with missing values, outliers and categoricals."""
@@ -39,16 +42,64 @@ def make_demo_dataset(random_state: int = 42, n_rows: int = 2000) -> tuple[pd.Da
     return X, y
 
 
+def drop_columns(X: pd.DataFrame, drop_cols: tuple[str, ...], target: str | None) -> pd.DataFrame:
+    """Remove user-specified feature columns (IDs, leaky or junk columns)."""
+    if not drop_cols:
+        return X
+    if target is not None and target in drop_cols:
+        raise ValueError(f"--drop-cols cannot include the target column {target!r}.")
+    missing = [c for c in drop_cols if c not in X.columns]
+    if missing:
+        raise ValueError(
+            f"--drop-cols not found in features: {missing}. Columns: {list(X.columns)}"
+        )
+    X = X.drop(columns=list(drop_cols))
+    if X.shape[1] == 0:
+        raise ValueError("No feature columns left after applying --drop-cols.")
+    logger.info("Dropped columns: %s", list(drop_cols))
+    return X
+
+
+def find_id_like_columns(X: pd.DataFrame) -> list[str]:
+    """Non-float columns with almost one unique value per row (likely row IDs)."""
+    n_rows = len(X)
+    if n_rows < MIN_ROWS_FOR_ID_CHECK:
+        return []
+    return [
+        str(col)
+        for col in X.columns
+        if not pd.api.types.is_float_dtype(X[col])
+        and X[col].nunique(dropna=True) >= ID_UNIQUE_RATIO * n_rows
+    ]
+
+
 def load_dataset(
-    path: Path | None, target: str | None, random_state: int
+    path: Path | None,
+    target: str | None,
+    random_state: int,
+    drop_cols: tuple[str, ...] = (),
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Load a CSV (features, target) or fall back to the synthetic demo dataset."""
     if path is None:
         logger.info("No dataset supplied; using synthetic demo data (target: churn).")
-        return make_demo_dataset(random_state)
-    if not target:
-        raise ValueError("A target column is required when a dataset is supplied (--target).")
-    df = pd.read_csv(path)
-    if target not in df.columns:
-        raise ValueError(f"Target column {target!r} not found. Columns: {list(df.columns)}")
-    return df.drop(columns=[target]), df[target]
+        X, y = make_demo_dataset(random_state)
+        target = None
+    else:
+        if not target:
+            raise ValueError("A target column is required when a dataset is supplied (--target).")
+        if not Path(path).is_file():
+            raise ValueError(f"Dataset file not found: {path}. See docs/data/README.md.")
+        df = pd.read_csv(path)
+        if target not in df.columns:
+            raise ValueError(f"Target column {target!r} not found. Columns: {list(df.columns)}")
+        X, y = df.drop(columns=[target]), df[target]
+
+    X = drop_columns(X, drop_cols, target)
+    for col in find_id_like_columns(X):
+        logger.warning(
+            "Column %r has almost one unique value per row (looks like an ID). "
+            "Consider --drop-cols %s.",
+            col,
+            col,
+        )
+    return X, y

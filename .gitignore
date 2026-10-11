@@ -6,12 +6,13 @@
 # Misc
 PATCH.md
 temp.md
-
-# Personal workspace
 docs/00_aaa/
 
 # Project outputs
 outputs/
+
+# Local datasets (root only; docs/data/ is tracked)
+/data/
 
 # Python
 __pycache__/
